@@ -11,6 +11,8 @@ export interface Shipment {
   customer: string
   date: string
   amount: number
+  signedBy?: string // กำหนดรับโดยใคร
+  delayReason?: 'Weather' | 'Traffic' | 'Customs' // กำหนดเหตุผลล่าช้า
 }
 
 export function generateMockShipments(count: number = 50): Array<Shipment> {
@@ -86,4 +88,58 @@ export async function getShipments(
   const rows = data.slice(start, start + pageSize)
 
   return { rows, total, page, pageSize, totalPages }
+}
+
+export type UpdateShipmentInput = // กำหนด type นำหรับ update shipment status
+  | { id: string; status: 'delivered'; signedBy: string }
+  | {
+      id: string
+      status: 'cancelled'
+      reason: 'Customer request' | 'Payment issue' | 'Other'
+    }
+  | { id: string; status: 'in-transit' }
+  | { id: string; status: 'pending' }
+
+// สร้าง function update status shipment
+
+export async function updateShipmentStatus(
+  input: UpdateShipmentInput,
+): Promise<Shipment> {
+  await new Promise((render) => setTimeout(render, 1000)) // จำลอง Delay 1 วิ
+
+  if (Math.random() < 0.2) {
+    // จำลองการสุ่มการเกิดข้อผิดพลาด 20%
+    throw new Error('Random failure (simulated)')
+  }
+
+  const shipmentExist = DB.findIndex((shipment) => shipment.id === input.id) // ค้นหา shipment ที่มีอยู่
+  if (shipmentExist === -1) throw new Error('Shipment not found')
+
+  const previousShipment = DB[shipmentExist] //เก็บค่า shipment ก่อนหน้า
+  let newShipmentStatus: Shipment = {
+    ...previousShipment,
+    status: input.status,
+  }
+
+  if (input.status === 'delivered') {
+    newShipmentStatus = {
+      ...newShipmentStatus,
+      signedBy: input.signedBy,
+      delayReason: undefined,
+    }
+  }
+  if (input.status === 'cancelled') {
+    newShipmentStatus = { ...newShipmentStatus, signedBy: undefined }
+  }
+  if (input.status === 'in-transit' || input.status === 'pending') {
+    // ถ้าไม่ได้มีการอัพเดตก็ไม่ต้องกำหนด signed by กับ delay reason
+    newShipmentStatus = {
+      ...newShipmentStatus,
+      signedBy: undefined,
+      delayReason: undefined,
+    }
+  }
+
+  DB[shipmentExist] = newShipmentStatus
+  return newShipmentStatus
 }
