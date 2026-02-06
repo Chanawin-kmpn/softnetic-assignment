@@ -3,11 +3,7 @@
  * This file will contain mock shipment data generation utilities
  */
 
-export type ShipmentStatus =
-  | 'pending'
-  | 'in-transit'
-  | 'delivered'
-  | 'cancelled'
+import { ShipmentStatus } from '@/types/types'
 
 export interface Shipment {
   id: string
