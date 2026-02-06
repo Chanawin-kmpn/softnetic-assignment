@@ -7,6 +7,8 @@ import { getShipments } from '@/lib/mock-data'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { ShipmentStatus } from '@/types/types'
+import { ShipmentTable } from '@/components/ShipmentTable'
+
 const searchSchema = z.object({
   page: z.coerce.number().int().positive().catch(1), // ทำการสร้าง validate สำหรับ page เมื่อเป็น NAN ให้กลับมาเป็น page=1
   pageSize: z.coerce.number().int().min(5).max(100).catch(20), // เช่นเดียวกัน validate สำหรับ page size ให้มีค่าเริ่มต้นที่ 20
@@ -30,7 +32,6 @@ export const Route = createFileRoute('/manifest')({
 
 function ManifestComponent() {
   const search = Route.useSearch() // เก็บค่าที่ได้จาก query parameter
-  console.log(search)
   const data = Route.useLoaderData() // ใช้ useLoaderData เพื่อดึงข้อมูลจาก Route ที่ใกล้ที่สุด ซึ่งก็คือ Route นี้แหละ
   const navigate = Route.useNavigate() // ใช้เปลี่ยน pathname url
 
@@ -89,28 +90,7 @@ function ManifestComponent() {
           Total: {data.total} • Page {data.page}/{data.totalPages}
         </div>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="py-2">ID</th>
-              <th>Customer</th>
-              <th>Status</th>
-              <th>Date</th>
-              <th className="text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.rows.map((s) => (
-              <tr key={s.id} className="border-b">
-                <td className="py-2">{s.id}</td>
-                <td>{s.customer}</td>
-                <td>{s.status}</td>
-                <td>{new Date(s.date).toLocaleString()}</td>
-                <td className="text-right">{s.amount}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ShipmentTable data={data.rows} />
 
         <div className="flex gap-2 mt-4">
           <button
