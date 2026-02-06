@@ -82,7 +82,7 @@ export async function getShipments(
   })
 
   const total = data.length
-  const pageSize = input.pageSize
+  const pageSize = Math.max(1, input.pageSize)
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const page = Math.min(Math.max(1, input.page), totalPages)
 

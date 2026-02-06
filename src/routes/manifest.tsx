@@ -31,7 +31,7 @@ export const Route = createFileRoute('/manifest')({
 function ManifestComponent() {
   const data = Route.useLoaderData() // ใช้ useLoaderData เพื่อดึงข้อมูลจาก Route ที่ใกล้ที่สุด ซึ่งก็คือ Route นี้แหละ
 
-  console.log(data) // ทดสอบ response ของข้อมูล ได้ประมาณนี้ {rows: Array(20), total: 50, page: 1, pageSize: 20, totalPages: 3}
+  // console.log(data) // ทดสอบ response ของข้อมูล ได้ประมาณนี้ {rows: Array(20), total: 50, page: 1, pageSize: 20, totalPages: 3}
 
   return (
     <div className="container mx-auto py-8">
