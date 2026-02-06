@@ -4,7 +4,7 @@
  */
 
 import { getShipments } from '@/lib/mock-data'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
 import { ShipmentStatus } from '@/types/types'
 import { ShipmentTable } from '@/components/ShipmentTable'
@@ -26,7 +26,22 @@ const searchSchema = z.object({
 export const Route = createFileRoute('/manifest')({
   validateSearch: (search) => searchSchema.parse(search),
   loaderDeps: ({ search }) => search, // ใช้ loaderDeps สำหรับอ่าน Search params
-  loader: ({ deps }) => getShipments(deps), // นำค่า deps ที่เป็น Input สำหรับ function ที่เรียก shipment
+  loader: async ({ deps }) => {
+    const result = await getShipments(deps)
+
+    if (result.page !== deps.page) {
+      throw redirect({
+        to: '/manifest',
+        search: {
+          ...deps,
+          page: result.page,
+        },
+        replace: true,
+      })
+    }
+
+    return result
+  }, // นำค่า deps ที่เป็น Input สำหรับ function ที่เรียก shipment
   component: ManifestComponent,
 })
 
@@ -82,6 +97,24 @@ function ManifestComponent() {
           <option value="date.asc">date asc</option>
           <option value="amount.desc">amount desc</option>
           <option value="amount.asc">amount asc</option>
+        </select>
+
+        <label className="text-sm ml-4">Page size:</label>
+        <select
+          className="border rounded px-2 py-1"
+          value={search.pageSize}
+          onChange={(e) => {
+            const nextSize = Number(e.target.value)
+            navigate({
+              search: (prev) => ({ ...prev, pageSize: nextSize, page: 1 }),
+            })
+          }}
+        >
+          {[10, 20, 50, 100].map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
         </select>
       </div>
 
